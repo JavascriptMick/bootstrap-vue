@@ -33,18 +33,38 @@ if (isVue3) {
   const originalVModelDynamicCreated = Vue.vModelDynamic.created
   const originalVModelDynamicBeforeUpdate = Vue.vModelDynamic.beforeUpdate
 
-  // See https://github.com/vuejs/vue-next/pull/4121 for details
+  // See https://github.com/vuejs/vue-next/pull/4121 and https://github.com/vuejs/core/pull/8681 for details
   Vue.vModelDynamic.created = function(el, binding, vnode) {
-    originalVModelDynamicCreated.call(this, el, binding, vnode)
-    if (!el._assign) {
-      el._assign = () => {}
+    const assignSymbol = Object.getOwnPropertySymbols(el).find(s => s.description === '_assign')
+    if (assignSymbol && !el[assignSymbol]) {
+      el[assignSymbol] = () => {}
     }
+    originalVModelDynamicCreated.call(this, el, binding, vnode)
   }
   Vue.vModelDynamic.beforeUpdate = function(el, binding, vnode) {
-    originalVModelDynamicBeforeUpdate.call(this, el, binding, vnode)
-    if (!el._assign) {
-      el._assign = () => {}
+    const assignSymbol = Object.getOwnPropertySymbols(el).find(s => s.description === '_assign')
+    if (assignSymbol && !el[assignSymbol]) {
+      el[assignSymbol] = () => {}
     }
+    originalVModelDynamicBeforeUpdate.call(this, el, binding, vnode)
+  }
+
+  const originalVModelCheckBoxCreated = Vue.vModelCheckbox.created
+  const originalVModelCheckBoxBeforeUpdate = Vue.vModelCheckbox.beforeUpdate
+
+  Vue.vModelCheckbox.created = function(el, binding, vnode) {
+    const assignSymbol = Object.getOwnPropertySymbols(el).find(s => s.description === '_assign')
+    if (assignSymbol && !el[assignSymbol]) {
+      el[assignSymbol] = () => {}
+    }
+    originalVModelCheckBoxCreated.call(this, el, binding, vnode)
+  }
+  Vue.vModelCheckbox.beforeUpdate = function(el, binding, vnode) {
+    const assignSymbol = Object.getOwnPropertySymbols(el).find(s => s.description === '_assign')
+    if (assignSymbol && !el[assignSymbol]) {
+      el[assignSymbol] = () => {}
+    }
+    originalVModelCheckBoxBeforeUpdate.call(this, el, binding, vnode)
   }
   extend = function patchedBootstrapVueExtend(definition) {
     if (typeof definition === 'object' && definition.render && !definition.__alreadyPatched) {
